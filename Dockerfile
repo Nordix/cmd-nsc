@@ -21,5 +21,8 @@ FROM test as debug
 CMD dlv -l :40000 --headless=true --api-version=2 test -test.v ./...
 
 FROM alpine as runtime
+RUN apk update && apk add libcap
 COPY --from=build /bin/app /bin/app
+RUN setcap 'cap_dac_override+ep' /bin/app \
+  && setcap 'cap_net_raw+ep' /bin/busybox
 ENTRYPOINT ["/bin/app"]
